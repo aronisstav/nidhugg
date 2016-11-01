@@ -4,6 +4,7 @@
 *.log
 *.trs
 *.aux
+*.dwo
 *.toc
 src/nidhugg
 src/nidhuggc
