@@ -100,6 +100,14 @@ bool TSOTraceBuilder::schedule(int *proc, int *aux, int *alt, bool *dryrun){
     --prefix_idx;
   }
 
+  /* Propagate bound */
+  int bnd;
+  if(0 <= prefix_idx){
+    bnd = prefix[prefix_idx].branch_bound;
+  }else{
+    bnd = conf.branch_bound;
+  }
+
   /* Create a new Event */
   ++prefix_idx;
   assert(prefix_idx == int(prefix.size()));
@@ -116,7 +124,8 @@ bool TSOTraceBuilder::schedule(int *proc, int *aux, int *alt, bool *dryrun){
        (conf.max_search_depth < 0 || threads[p].clock[p] < conf.max_search_depth)){
       ++threads[p].clock[p];
       prefix.push_back(Event(IID<IPid>(IPid(p),threads[p].clock[p]),
-                             threads[p].clock));
+                             threads[p].clock,
+                             bnd));
       *proc = p/2;
       *aux = 0;
       return true;
@@ -128,7 +137,8 @@ bool TSOTraceBuilder::schedule(int *proc, int *aux, int *alt, bool *dryrun){
        (conf.max_search_depth < 0 || threads[p].clock[p] < conf.max_search_depth)){
       ++threads[p].clock[p];
       prefix.push_back(Event(IID<IPid>(IPid(p),threads[p].clock[p]),
-                             threads[p].clock));
+                             threads[p].clock,
+                             bnd));
       *proc = p/2;
       *aux = -1;
       return true;
@@ -246,6 +256,12 @@ bool TSOTraceBuilder::reset(){
     }
     evt.sleep_branch_trace_count =
       prefix[i].sleep_branch_trace_count + estimate_trace_count(i+1);
+    int bnd = prefix[i].branch_bound;
+    if (bnd == -2){
+      evt.branch_bound = -2;
+    }else{
+      evt.branch_bound = bnd - 1;
+    }
 
     prefix[i] = evt;
 
@@ -912,6 +928,13 @@ void TSOTraceBuilder::add_branch(int i, int j){
   assert(j <= prefix_idx);
 
   VecSet<IPid> isleep = sleep_set_at(i);
+
+  /* Branch bounding
+   */
+  int bnd = prefix[i].branch_bound;
+  if(bnd != -2 && bnd - prefix[i].branch.size() < 0){
+    return;
+  }
 
   /* candidates is a map from IPid p to event index i such that the
    * IID (p,i) identifies an event between prefix[i] (exclusive) and

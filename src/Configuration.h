@@ -84,6 +84,7 @@ public:
     transform_loop_unroll = -1;
     print_progress = false;
     print_progress_estimate = false;
+    branch_bound = -2;
   };
   /* Read the switches given to the program by the user. Assign
    * configuration options accordingly.
@@ -173,6 +174,9 @@ public:
    * traces.
    */
   bool print_progress_estimate;
+
+  /* Branch bounding */
+  int branch_bound;
 
   /* The set of all commandline switches that are associated with
    * setting configuration options. This set has nothing to do with

@@ -70,6 +70,11 @@ static llvm::cl::opt<bool> cl_print_progress_estimate("print-progress-estimate",
                                                       llvm::cl::desc("Continually print analysis progress and trace "
                                                                      "number estimate to stdout."));
 
+static llvm::cl::opt<int>
+cl_branch_bound("branch-bound",
+                llvm::cl::NotHidden,llvm::cl::init(-1),
+                llvm::cl::desc("Bound the branching of the exploration tree"));
+
 static llvm::cl::list<std::string> cl_extfun_no_race("extfun-no-race",llvm::cl::NotHidden,
                                                          llvm::cl::value_desc("FUN"),
                                                          llvm::cl::desc("Assume that the external function FUN, when called as blackbox,\n"
@@ -88,7 +93,8 @@ const std::set<std::string> &Configuration::commandline_opts(){
     "no-spin-assume",
     "unroll",
     "print-progress",
-    "print-progress-estimate"
+    "print-progress-estimate",
+    "branch-bound"
   };
   return opts;
 }
@@ -109,6 +115,7 @@ void Configuration::assign_by_commandline(){
   transform_loop_unroll = cl_transform_loop_unroll;
   print_progress = cl_print_progress || cl_print_progress_estimate;
   print_progress_estimate = cl_print_progress_estimate;
+  branch_bound = cl_branch_bound - 1;
 }
 
 void Configuration::check_commandline(){
@@ -164,6 +171,12 @@ void Configuration::check_commandline(){
     if(cl_memory_model == Configuration::PSO) mm = "PSO";
     if(cl_memory_model == Configuration::POWER) mm = "POWER";
     if(cl_memory_model == Configuration::ARM) mm = "ARM";
+    if(cl_memory_model != Configuration::SC && cl_memory_model != Configuration::TSO){
+      if(cl_branch_bound.getNumOccurrences()){
+        Debug::warn("Configuration::check_commandline:mm:branch-bound")
+          << "WARNING: --branch-bound ignored under memory model " << mm << ".\n";
+      }
+    }
     if(cl_memory_model == Configuration::ARM || cl_memory_model == Configuration::POWER){
       if(cl_extfun_no_race.getNumOccurrences()){
         Debug::warn("Configuration::check_commandline:mm:extfun-no-race")

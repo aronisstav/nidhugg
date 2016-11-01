@@ -280,9 +280,11 @@ protected:
   class Event{
   public:
     Event(const IID<IPid> &iid,
-          const VClock<IPid> &clk)
+          const VClock<IPid> &clk,
+          int bnd = -2)
       : iid(iid), origin_iid(iid), size(1), alt(0), md(0), clock(clk),
-        may_conflict(false), sleep_branch_trace_count(0) {};
+        may_conflict(false), sleep_branch_trace_count(0),
+        branch_bound(bnd) {};
     /* The identifier for the first event in this event sequence. */
     IID<IPid> iid;
     /* The IID of the program instruction which is the origin of this
@@ -328,6 +330,10 @@ protected:
      * explored traces.
      */
     int sleep_branch_trace_count;
+    /* The number of branchings allowed after this event. Used to
+     * implement branch bounding. 
+     */
+    int branch_bound;
   };
 
   /* The fixed prefix of events in the current execution. This may be
