@@ -30,6 +30,7 @@
 #include "StrModule.h"
 #include "TSOInterpreter.h"
 #include "TSOTraceBuilder.h"
+#include "DelayTraceBuilder.h"
 
 #include <fstream>
 #include <stdexcept>
@@ -194,10 +195,18 @@ DPORDriver::Result DPORDriver::run(){
 
   switch(conf.memory_model){
   case Configuration::SC:
-    TB = new TSOTraceBuilder(conf);
-    break;
   case Configuration::TSO:
-    TB = new TSOTraceBuilder(conf);
+    if(conf.dpor_mode == Configuration::DPOR){
+      if(conf.branch_bound < -2){
+        throw std::logic_error("DPORDriver: Invalid value for branch-bound.");
+      }
+      TB = new TSOTraceBuilder(conf);
+    }else{
+      if(conf.branch_bound <= -2){
+        throw std::logic_error("DPORDriver: Delay-bound exploration requires a valid branch-bound.");
+      }
+      TB = new DelayTraceBuilder(conf);
+    }
     break;
   case Configuration::PSO:
     TB = new PSOTraceBuilder(conf);

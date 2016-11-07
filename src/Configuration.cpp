@@ -75,6 +75,14 @@ cl_branch_bound("branch-bound",
                 llvm::cl::NotHidden,llvm::cl::init(-1),
                 llvm::cl::desc("Bound the branching of the exploration tree"));
 
+static llvm::cl::opt<Configuration::DPORMode>
+cl_dpor_mode(llvm::cl::NotHidden, llvm::cl::init(Configuration::DPOR),
+             llvm::cl::desc("Select DPOR mode"),
+             llvm::cl::values(clEnumValN(Configuration::DPOR,"dpor","Source DPOR"),
+                              clEnumValN(Configuration::DELAY,"delay","Delay bounding"),
+                              clEnumValN(Configuration::DELAY_SLEEP,"delay-sleep","Delay bounding with Sleep Sets"),
+                              clEnumValEnd));
+
 static llvm::cl::list<std::string> cl_extfun_no_race("extfun-no-race",llvm::cl::NotHidden,
                                                          llvm::cl::value_desc("FUN"),
                                                          llvm::cl::desc("Assume that the external function FUN, when called as blackbox,\n"
@@ -94,7 +102,8 @@ const std::set<std::string> &Configuration::commandline_opts(){
     "unroll",
     "print-progress",
     "print-progress-estimate",
-    "branch-bound"
+    "branch-bound",
+    "dpor", "delay", "delay-sleep"
   };
   return opts;
 }
@@ -116,6 +125,7 @@ void Configuration::assign_by_commandline(){
   print_progress = cl_print_progress || cl_print_progress_estimate;
   print_progress_estimate = cl_print_progress_estimate;
   branch_bound = cl_branch_bound - 1;
+  dpor_mode = cl_dpor_mode;
 }
 
 void Configuration::check_commandline(){

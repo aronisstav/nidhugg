@@ -42,6 +42,11 @@ public:
     PSO,
     TSO
   };
+  enum DPORMode{
+    DPOR,
+    DELAY,
+    DELAY_SLEEP
+  };
   /* Assign default values to all configuration parameters. */
   Configuration(){
     explore_all_traces = false;
@@ -85,6 +90,7 @@ public:
     print_progress = false;
     print_progress_estimate = false;
     branch_bound = -2;
+    dpor_mode = DPOR;
   };
   /* Read the switches given to the program by the user. Assign
    * configuration options accordingly.
@@ -177,6 +183,9 @@ public:
 
   /* Branch bounding */
   int branch_bound;
+
+  /* Whether DPOR or delay bound exploration will be performed. */
+  DPORMode dpor_mode;
 
   /* The set of all commandline switches that are associated with
    * setting configuration options. This set has nothing to do with
